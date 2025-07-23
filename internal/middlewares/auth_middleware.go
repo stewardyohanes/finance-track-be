@@ -33,7 +33,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		userID, username, email, err := jwt.ValidateToken(header, secretKey)
+		userID, username, email, err := jwt.ValidateAccessToken(header, secretKey)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()

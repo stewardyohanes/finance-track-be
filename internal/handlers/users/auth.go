@@ -16,7 +16,7 @@ func (h *handler) SignIn(c *gin.Context) {
 		return
 	}
 	
-	token, err := h.usersService.SignIn(c.Request.Context(), &req)
+	tokenPair, err := h.usersService.SignIn(c.Request.Context(), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -24,9 +24,11 @@ func (h *handler) SignIn(c *gin.Context) {
 	
 	c.JSON(http.StatusOK, users.SignInResponse{
 		Data: struct {
-			Token string `json:"token"`
+			AccessToken  string `json:"access_token"`
+			RefreshToken string `json:"refresh_token"`
 		}{
-			Token: token,
+			AccessToken:  tokenPair.AccessToken,
+			RefreshToken: tokenPair.RefreshToken,
 		},
 		Message: "Sign in successful",
 	})
@@ -39,8 +41,7 @@ func (h *handler) SignUp(c *gin.Context) {
 		return
 	}
 	
-	
-	token, err := h.usersService.SignUp(c.Request.Context(), &req)
+	tokenPair, user, err := h.usersService.SignUp(c.Request.Context(), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -48,20 +49,47 @@ func (h *handler) SignUp(c *gin.Context) {
 	
 	c.JSON(http.StatusOK, users.SignUpResponse{
 		Data: struct {
-			ID        uuid.UUID `json:"id"`
-			Username  string    `json:"username"`
-			Email     string    `json:"email"`
-			CreatedAt time.Time `json:"created_at"`
-			UpdatedAt time.Time `json:"updated_at"`
-			Token     string    `json:"token"`
+			ID           uuid.UUID `json:"id"`
+			Username     string    `json:"username"`
+			Email        string    `json:"email"`
+			CreatedAt    time.Time `json:"created_at"`
+			UpdatedAt    time.Time `json:"updated_at"`
+			AccessToken  string    `json:"access_token"`
+			RefreshToken string    `json:"refresh_token"`
 		}{
-			ID:        uuid.New(),
-			Username:  req.Username,
-			Email:     req.Email,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-			Token:     token,
+			ID:           user.ID,
+			Username:     user.Username,
+			Email:        user.Email,
+			CreatedAt:    user.CreatedAt,
+			UpdatedAt:    user.UpdatedAt,
+			AccessToken:  tokenPair.AccessToken,
+			RefreshToken: tokenPair.RefreshToken,
 		},
 		Message: "Sign up successful",
+	})
+}
+
+func (h *handler) RefreshToken(c *gin.Context) {
+	var req users.RefreshTokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	
+	tokenPair, err := h.usersService.RefreshToken(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	
+	c.JSON(http.StatusOK, users.RefreshTokenResponse{
+		Data: struct {
+			AccessToken  string `json:"access_token"`
+			RefreshToken string `json:"refresh_token"`
+		}{
+			AccessToken:  tokenPair.AccessToken,
+			RefreshToken: tokenPair.RefreshToken,
+		},
+		Message: "Token refreshed successfully",
 	})
 }

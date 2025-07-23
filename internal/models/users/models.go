@@ -15,7 +15,8 @@ type (
 
 	SignInResponse struct {
 		Data struct {
-			Token string `json:"token"`
+			AccessToken  string `json:"access_token"`
+			RefreshToken string `json:"refresh_token"`
 		} `json:"data"`
 		Message string `json:"message"`
 	}
@@ -28,12 +29,25 @@ type (
 
 	SignUpResponse struct {
 		Data struct {
-			ID        uuid.UUID `json:"id"`
-			Username  string    `json:"username"`
-			Email     string    `json:"email"`
-			CreatedAt time.Time `json:"created_at"`
-			UpdatedAt time.Time `json:"updated_at"`
-			Token     string    `json:"token"`
+			ID           uuid.UUID `json:"id"`
+			Username     string    `json:"username"`
+			Email        string    `json:"email"`
+			CreatedAt    time.Time `json:"created_at"`
+			UpdatedAt    time.Time `json:"updated_at"`
+			AccessToken  string    `json:"access_token"`
+			RefreshToken string    `json:"refresh_token"`
+		} `json:"data"`
+		Message string `json:"message"`
+	}
+
+	RefreshTokenRequest struct {
+		RefreshToken string `json:"refresh_token" binding:"required"`
+	}
+
+	RefreshTokenResponse struct {
+		Data struct {
+			AccessToken  string `json:"access_token"`
+			RefreshToken string `json:"refresh_token"`
 		} `json:"data"`
 		Message string `json:"message"`
 	}
@@ -41,12 +55,14 @@ type (
 
 type (
 	User struct {
-		ID        uuid.UUID `gorm:"type:uuid;primaryKey"`
-		Username  string    `gorm:"unique;not null"`
-		Email     string    `gorm:"unique;not null"`
-		Password  string    `gorm:"not null"`
-		CreatedAt time.Time `gorm:"autoCreateTime"`
-		UpdatedAt time.Time `gorm:"autoUpdateTime"`
+		ID           uuid.UUID  `gorm:"type:uuid;primaryKey"`
+		Username     string     `gorm:"unique;not null"`
+		Email        string     `gorm:"unique;not null"`
+		Password     string     `gorm:"not null"`
+		RefreshToken *string    `gorm:"type:text"`
+		TokenExpiry  *time.Time `gorm:"type:timestamp"`
+		CreatedAt    time.Time  `gorm:"autoCreateTime"`
+		UpdatedAt    time.Time  `gorm:"autoUpdateTime"`
 	}
 )
 
