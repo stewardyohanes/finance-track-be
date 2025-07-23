@@ -11,10 +11,6 @@ func SetupRoutes(router *gin.Engine) {
 		c.JSON(http.StatusOK, gin.H{"message": "OK"})
 	})
 }
+	
 
-func PublicRoutes(router *gin.Engine) {
-	router.Group("/api/v1/auth")
-
-
-}
 
