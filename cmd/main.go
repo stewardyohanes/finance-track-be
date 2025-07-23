@@ -23,7 +23,12 @@ func main() {
 		log.Fatal().Err(err).Msg("Failed to connect to database")
 	}
 
-	db.AutoMigrate(&users.User{})
+	// Run database migration
+	if err := db.AutoMigrate(&users.User{}); err != nil {
+		log.Fatal().Err(err).Msg("Failed to migrate database")
+	}
+	
+	log.Info().Msg("Database migration completed successfully")
 
 	router := gin.Default()
 	routes.SetupRoutes(router)
